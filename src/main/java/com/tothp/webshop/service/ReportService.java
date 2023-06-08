@@ -6,6 +6,7 @@ import com.tothp.webshop.model.Payment;
 import com.tothp.webshop.model.Webshop;
 import com.tothp.webshop.repository.CustomerRepository;
 import com.tothp.webshop.repository.PaymentRepository;
+import com.tothp.webshop.repository.WebshopRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,13 @@ public class ReportService {
 
     private final CustomerRepository customerRepository;
     private final PaymentRepository paymentRepository;
+    private final WebshopRepository webshopRepository;
 
     @Autowired
-    public ReportService(CustomerRepository customerRepository, PaymentRepository paymentRepository) {
+    public ReportService(CustomerRepository customerRepository, PaymentRepository paymentRepository, WebshopRepository webshopRepository) {
         this.customerRepository = customerRepository;
         this.paymentRepository = paymentRepository;
+        this.webshopRepository = webshopRepository;
     }
 
     public void generateCustomerTotalPurchasesReport(String reportFilePath) {
@@ -58,6 +61,7 @@ public class ReportService {
         }
         return purchaseTotal;
     }
+
     public void generateTopCustomersReport(String inputFilePath, String outputFilePath) {
         List<CustomerPurchase> customerPurchases = readReportFile(inputFilePath);
         customerPurchases.sort(Comparator.comparingInt(CustomerPurchase::getTotalPurchase).reversed());
@@ -81,24 +85,53 @@ public class ReportService {
                     CustomerPurchase customerPurchase = new CustomerPurchase(name, address, totalPurchase);
                     customerPurchases.add(customerPurchase);
                 } else {
-                    System.err.println("Invalid CSV format: " + line);
+                    LOGGER.error("Invalid CSV format: {}", line);
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error reading report file: " + e.getMessage());
+            LOGGER.error("Error reading report file: {}", e.getMessage());
         }
 
         return customerPurchases;
     }
 
     private void saveTopCustomersReport(List<CustomerPurchase> topTwoCustomers, String filePath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
             for (CustomerPurchase customer : topTwoCustomers) {
-                writer.write(customer.getName() + ";" + customer.getAddress() + ";" + customer.getTotalPurchase());
-                writer.newLine();
+                String line = String.format("%s;%s;%d", customer.getName(), customer.getAddress(), customer.getTotalPurchase());
+                writer.println(line);
             }
+            LOGGER.info("Customer report generated successfully.");
         } catch (IOException e) {
-            System.err.println("Error saving data to file: " + e.getMessage());
+            LOGGER.error("Error generating customer report: {}", e.getMessage());
+        }
+    }
+
+    public void generateWebshopReports(String filePath) {
+        List<Webshop> webshops = webshopRepository.findAll();
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+
+            for (Webshop webshop : webshops) {
+                String webshopId = webshop.getWebshopId();
+                int totalPurchasesWithCard = 0;
+                int totalPurchasesWithTransfer = 0;
+
+                List<Payment> payments = paymentRepository.findByWebshop(webshop);
+
+                for (Payment payment : payments) {
+                    if ("card".equals(payment.getPaymentType())) {
+                        totalPurchasesWithCard += payment.getPrice();
+                    } else if ("transfer".equals(payment.getPaymentType())) {
+                        totalPurchasesWithTransfer += payment.getPrice();
+                    }
+                }
+                String line = String.format("%s;%s;%d", webshopId, totalPurchasesWithCard, totalPurchasesWithTransfer);
+                writer.println(line);
+            }
+            LOGGER.info("Customer report generated successfully.");
+        } catch (IOException e) {
+            LOGGER.error("Error generating customer report: {}", e.getMessage());
         }
     }
 }
