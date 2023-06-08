@@ -12,12 +12,16 @@ public class WebshopApplication {
     private static final String CUSTOMER_FILE_PATH = "csv/customer.csv";
     private static final String PAYMENT_FILE_PATH = "csv/payments.csv";
 
+    private static final String REPORT_FILE_PATH = "reports/report01.csv";
+
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(WebshopApplication.class, args);
 
         DataImporter csvDataImporter = context.getBean(DataImporter.class);
         try {
             csvDataImporter.importDataFromCSV(CUSTOMER_FILE_PATH, PAYMENT_FILE_PATH);
+            ReportService reportService = context.getBean(ReportService.class);
+            reportService.generateCustomerTotalPurchasesReport(REPORT_FILE_PATH);
         } catch (ImportException e) {
             System.err.println("Error importing data from CSV files: " + e.getMessage());
         }
