@@ -18,7 +18,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class PaymentService {
@@ -107,5 +109,13 @@ public class PaymentService {
         } catch (DateTimeParseException e) {
             return false;
         }
+    }
+
+    public List<Payment> getAllPayments() {
+        return paymentRepository.findAll();
+    }
+
+    public Optional<Payment> getPaymentById(Long paymentId) {
+        return paymentRepository.findById(paymentId);
     }
 }

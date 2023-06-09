@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WebshopService {
@@ -17,11 +19,19 @@ public class WebshopService {
     WebshopRepository webshopRepository;
 
     void createWebshops(String webshopId) {
-        Webshop ws01 = Webshop.builder()
+        Webshop ws = Webshop.builder()
                 .webshopId(webshopId)
                 .customers(Collections.emptyList())
                 .build();
-        webshopRepository.save(ws01);
+        webshopRepository.save(ws);
         LOGGER.info("Webshop created: webshopId={}", webshopId);
+    }
+
+    public List<Webshop> getAllWebshops() {
+       return webshopRepository.findAll();
+    }
+
+    public Optional<Webshop> getWebshopById(String webshopId) {
+        return webshopRepository.findById(webshopId);
     }
 }

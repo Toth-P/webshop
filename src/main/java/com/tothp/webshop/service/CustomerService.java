@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerService {
@@ -67,4 +68,11 @@ public class CustomerService {
         }
     }
 
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
+    }
+
+    public Optional<Customer> getCustomerById(Long customerId) {
+        return customerRepository.findById(customerId);
+    }
 }
