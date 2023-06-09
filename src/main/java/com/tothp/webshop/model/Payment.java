@@ -25,7 +25,8 @@ public class Payment {
     private Webshop webshop;
     @Column(name = "customer_id")
     private String customerId;
-    private String paymentType;
+    @Enumerated(EnumType.STRING)
+    private PaymentType paymentType;
     private int price;
     private String accountNumber;
     private String cardNumber;

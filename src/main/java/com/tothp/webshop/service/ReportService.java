@@ -1,9 +1,6 @@
 package com.tothp.webshop.service;
 
-import com.tothp.webshop.model.Customer;
-import com.tothp.webshop.model.CustomerPurchase;
-import com.tothp.webshop.model.Payment;
-import com.tothp.webshop.model.Webshop;
+import com.tothp.webshop.model.*;
 import com.tothp.webshop.repository.CustomerRepository;
 import com.tothp.webshop.repository.PaymentRepository;
 import com.tothp.webshop.repository.WebshopRepository;
@@ -120,9 +117,9 @@ public class ReportService {
                 List<Payment> payments = paymentRepository.findByWebshop(webshop);
 
                 for (Payment payment : payments) {
-                    if ("card".equals(payment.getPaymentType())) {
+                    if (payment.getPaymentType() == PaymentType.CARD) {
                         totalPurchasesWithCard += payment.getPrice();
-                    } else if ("transfer".equals(payment.getPaymentType())) {
+                    } else if (payment.getPaymentType() == PaymentType.TRANSFER) {
                         totalPurchasesWithTransfer += payment.getPrice();
                     }
                 }

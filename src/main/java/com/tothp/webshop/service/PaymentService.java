@@ -2,6 +2,7 @@ package com.tothp.webshop.service;
 
 import com.tothp.webshop.exception.ImportException;
 import com.tothp.webshop.model.Payment;
+import com.tothp.webshop.model.PaymentType;
 import com.tothp.webshop.model.Webshop;
 import com.tothp.webshop.repository.PaymentRepository;
 import com.tothp.webshop.repository.WebshopRepository;
@@ -24,7 +25,6 @@ public class PaymentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
 
-    @Autowired
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
     @Autowired
@@ -73,12 +73,12 @@ public class PaymentService {
                     Payment payment = Payment.builder()
                             .webshop(webshop)
                             .customerId(customerId)
-                            .paymentType(paymentType)
+                            .paymentType(PaymentType.valueOf(paymentType.toUpperCase()))
                             .price(Integer.parseInt(price))
-                            .dateOfPay(LocalDate.parse(dateOfPay, DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                            .dateOfPay(LocalDate.parse(dateOfPay, DATE_FORMATTER))
                             .build();
 
-                    if (Objects.equals(payment.getPaymentType(), "card")) {
+                    if (payment.getPaymentType() == PaymentType.CARD) {
                         payment.setCardNumber(cardNumber);
                     } else {
                         payment.setAccountNumber(accountNumber);
@@ -97,7 +97,7 @@ public class PaymentService {
 
 
     private boolean isValidPaymentType(String paymentType) {
-        return paymentType.equals("card") || paymentType.equals("transfer");
+        return paymentType.equalsIgnoreCase(PaymentType.CARD.name()) || paymentType.equalsIgnoreCase(PaymentType.TRANSFER.name());
     }
 
     private boolean isValidDate(String date) {
